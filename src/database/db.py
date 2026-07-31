@@ -41,3 +41,12 @@ def teacher_login(username, password):
       return teacher
 
   return None
+
+
+
+def get_all_students():
+  # Retrieve all student records from the database
+  response = supabase.table("students").select("*").execute()
+  students = response.data
+  return students
+ 
