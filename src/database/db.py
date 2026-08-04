@@ -47,11 +47,74 @@ def teacher_login(username, password):
 def get_all_students():
   # Retrieve all student records from the database
   response = supabase.table("students").select("*").execute()
-  students = response.data
-  return students
+  return response.data 
 
 
 def create_student(new_name, face_embedding=None, voice_embedding=None):
   data = {'name': new_name, 'face_embedding': face_embedding, 'voice_embedding': voice_embedding}
   response = supabase.table('students').insert(data).execute()
   return response.data
+
+
+def create_subject(sub_code, sub_name, section, teacher_id):
+  data = {
+    "subject_code": sub_code,
+    "name": sub_name,
+    "section": section,
+    "teacher_id": teacher_id
+  }
+  response = supabase.table("subjects").insert(data).execute()
+  return response.data
+
+"""
+def get_teacher_subjects(teacher_id):
+  # Retrieve subjects for a specific teacher from the database
+  response = (
+    supabase.table("subjects")
+    .select(
+        "*, attendence_logs(timestamp), subject_students(count)",
+        count="exact"
+    )
+    .eq("teacher_id", teacher_id)
+    .execute()
+  )
+  subjects = response.data
+  #print(subjects)
+
+  for subject in subjects:
+    subject["total_students"] = len(subject.get("subject_students", []))
+ 
+    attendence = subject.get("attendence_logs", [])
+    unique_sessions = len(set(log["timestamp"] for log in attendence))
+    subject["total_classes"] = unique_sessions
+
+    subject.pop("subject_students", None)
+    subject.pop("attendence_logs", None)
+  return subjects
+"""
+
+
+def get_teacher_subjects(teacher_id):
+    response = (
+        supabase.table("subjects")
+        .select("*, subject_students(*), attendence_logs(timestamp)")
+        .eq("teacher_id", teacher_id)
+        .execute()
+    )
+
+    subjects = response.data
+
+    for subject in subjects:
+        # Count the number of students enrolled
+        subject["total_students"] = len(subject.get("subject_students", []))
+
+        # Count unique attendance sessions
+        attendance = subject.get("attendence_logs", [])
+        unique_sessions = len(set(log["timestamp"] for log in attendance))
+        subject["total_classes"] = unique_sessions
+
+        # Remove nested data before returning
+        subject.pop("subject_students", None)
+        subject.pop("attendence_logs", None)
+
+    return subjects

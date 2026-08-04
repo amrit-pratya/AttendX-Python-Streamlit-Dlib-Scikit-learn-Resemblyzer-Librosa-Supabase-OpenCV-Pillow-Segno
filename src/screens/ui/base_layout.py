@@ -19,7 +19,7 @@ def style_bg_dashboard():
     st.markdown("""
       <style>
         .stApp {
-          background-color: ##E0E3FF !important;
+          background: #E0E3FF !important;
         }
       </style>
     """, unsafe_allow_html=True)
@@ -32,7 +32,7 @@ def style_base_layout():
 
         /* Hide the top bar of streamlit */
         #MainMenu, footer, header {
-          visibility: hidden;
+         visibility: hidden;
         }
         .block-container {
           padding-top:0.5rem !important;

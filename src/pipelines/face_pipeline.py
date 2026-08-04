@@ -30,11 +30,13 @@ def get_face_embeddings(image_np):
     encodings.append(np.array(face_descriptor))
   return encodings
 
-
+@st.cache_resource
 def get_trained_model():
-  students = get_all_students()
+  
   X = []
   y = []
+
+  students = get_all_students()
 
   if not students:
     return None  # No students found in the database
@@ -45,13 +47,17 @@ def get_trained_model():
       y.append(student.get('student_id'))  # Assuming 'student_id' is the unique identifier for the student
 
   if len(X) == 0:
-    return None  # No data to train on
+    return 0  # No data to train on
 
   clf = SVC(kernel='linear', probability=True, class_weight='balanced')
+
+
   try:
     clf.fit(X, y)
+
   except ValueError as e:
-    pass
+    st.error(f"SVM Training Failed: {e}")
+    return None  # Return None if training fails due to insufficient data or other issues
 
   return {'clf': clf, 'X': X, 'y': y}  # Return the trained model and the training data
 
@@ -79,7 +85,7 @@ def predict_attendence(class_img_np):
   all_students = sorted(list(set(y_train)))  # Get unique student IDs from the training data
 
   for encoding in encodings:
-    if len(all_students) <= 2:
+    if len(all_students) >= 2:
       predicted_id = int(clf.predict([encoding])[0])
     else:
       predicted_id = int(all_students[0])
@@ -93,4 +99,4 @@ def predict_attendence(class_img_np):
     if best_match_score <= resemblance_threshold:
       detected_student[predicted_id] = True
 
-  return detected_student, all_students, len(encoding)
+  return detected_student, all_students, len(encodings)

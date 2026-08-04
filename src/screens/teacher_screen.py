@@ -6,7 +6,11 @@ from src.screens.components.header import header_db
 
 from src.screens.components.footer import footer_home
 
-from src.database.db import check_teacher_exists, create_teacher, teacher_login
+from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_teacher_subjects
+
+from src.screens.components.dialog_create_subject import create_subject_dialog
+
+from src.screens.components.subject_cards import subject_card
 
 def teacher_screen():
     #st.title("Teacher Screen")
@@ -24,21 +28,90 @@ def teacher_screen():
 
 
 def teacher_dashboard():
+    teacher_data = st.session_state.teacher_data
     c1, c2 = st.columns(2,vertical_alignment='center', gap="xxlarge")
     with c1:
         header_db()
 
     with c2:
-        if st.button("Go back to Home", type="secondary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace"):
-            st.session_state['login_type'] = None
+        st.subheader(f"Welcome! {teacher_data['name']}")
+        if st.button("Logout", type="secondary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace"):
+            st.session_state['is_logged_in'] = False
+            del st.session_state['teacher_data']
             st.rerun()
 
-    st.header(f"Welcome, {st.session_state.teacher_data['name']}!", text_alignment="center")
     st.space()
-    st.write("Here you can manage your classes and students.")
-    # Add more functionality for the teacher dashboard here
 
+    if "curr_teacher_tab" not in st.session_state:
+        st.session_state.curr_teacher_tab = "take_attendance"
+    tab1, tab2, tab3 = st.columns(3)
+
+    with tab1:
+        type1 = "primary" if st.session_state.curr_teacher_tab == "take_attendance" else "tertiary"
+        if st.button('Take Attendance', type=type1, width='stretch', icon=':material/ar_on_you:'):
+            st.session_state.curr_teacher_tab = "take_attendance"
+            st.rerun()
+    with tab2:
+        type2 = "primary" if st.session_state.curr_teacher_tab == "manage_subjects" else "tertiary"
+        if st.button('Manage Subjects', type=type2, width='stretch', icon=':material/book_ribbon:'):
+            st.session_state.curr_teacher_tab = "manage_subjects"
+            st.rerun()
+    with tab3:
+        type3 = "primary" if st.session_state.curr_teacher_tab == "attendence_records" else "tertiary"
+        if st.button('Attendence Records', type=type3, width='stretch', icon=':material/cards_stack:'):
+            st.session_state.curr_teacher_tab = "attendence_records"
+            st.rerun()
+
+    st.divider()
+    
+    if st.session_state.curr_teacher_tab == "take_attendance":
+        teacher_tab_take_attendance()
+    elif st.session_state.curr_teacher_tab == "manage_subjects":
+        teacher_tab_manage_subjects()
+    elif st.session_state.curr_teacher_tab == "attendence_records":
+        teacher_tab_attendence_records()
     footer_home()
+
+
+def teacher_tab_take_attendance():
+    st.subheader("Take Attendance")
+    st.write("This is where you can take attendance for your classes.")
+    # Add functionality for taking attendance here
+
+def teacher_tab_manage_subjects():
+    teacher_id = st.session_state.teacher_data['teacher_id']
+    col1, col2 = st.columns(2)
+    with col1:
+        st.header("Manage Subjects")
+    with col2:
+        if st.button("Create New Subject", icon="➕", icon_position="right", width='stretch',):
+            create_subject_dialog(teacher_id)
+
+    subjects = get_teacher_subjects(teacher_id)
+    if subjects:
+        for sub in subjects:
+            def share_btn():
+                if st.button(f"Share Code: {sub['name']}",icon=":material/share:", icon_position="right", width='stretch', key=f"share_{sub['subject_code']}"):
+                    share_subject_dialog(sub['subject_code'], sub['name'], sub['section'])
+
+                st.space()
+
+            subject_card(
+                subject_code = sub['subject_code'],
+                subject_name = sub['name'], 
+                section = sub['section'], 
+                total_students = sub['total_students'],
+                total_classes = sub['total_classes'],
+                footer_callback = share_btn)
+            # Add more details or actions for each subject here
+    else:
+        st.info("No subjects found. Please create a new subject to get started.")
+
+def teacher_tab_attendence_records():
+    st.subheader("Attendance Records")
+    st.write("This is where you can view attendance records.")
+    # Add functionality for viewing attendance records here
+
 
 def login_teacher(username, password):
     if not username or not password:

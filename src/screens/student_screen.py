@@ -46,7 +46,7 @@ def student_screen():
 
     show_registration = False
 
-    photo_source = st.camera_input("Position your face in front of the camera and click on the button below to capture your image.", key="student_camera_input")
+    photo_source = st.camera_input("Position your face in front of the camera and click on the button below to capture your image.")
 
     if photo_source:
         img = np.array(Image.open(photo_source))  # Convert the captured image to a NumPy array
