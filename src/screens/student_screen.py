@@ -17,7 +17,28 @@ from src.pipelines.voice_pipeline import get_voice_embedding
 
 
 def student_dashboard():
-    st.header('Dashboard Here!')
+    student_data = st.session_state.student_data
+    c1, c2 = st.columns(2,vertical_alignment='center', gap="xxlarge")
+    with c1:
+        header_db()
+    with c2:
+        st.subheader(f"Welcome! {student_data['name']}")
+        if st.button("Logout", type="secondary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace"):
+            st.session_state['is_logged_in'] = False
+            del st.session_state['student_data']
+            st.rerun()
+    st.space()
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.header("Your Enrolled Subjects")
+    with c2:
+        st.subheader(f"Welcome, {student_data['name']}!")
+        if st.button("Logout", type="primary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace", width='stretch'):
+            enroll_dialog()
+            
+
+    footer_home()
 
 def student_screen():
     #st.title("Student Screen")

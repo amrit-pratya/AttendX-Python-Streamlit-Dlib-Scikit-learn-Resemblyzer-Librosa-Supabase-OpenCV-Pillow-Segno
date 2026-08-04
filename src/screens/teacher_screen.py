@@ -12,6 +12,8 @@ from src.screens.components.dialog_create_subject import create_subject_dialog
 
 from src.screens.components.subject_cards import subject_card
 
+from src.screens.components.dialog_share_screen import share_subject_dialog
+
 def teacher_screen():
     #st.title("Teacher Screen")
     #st.write("Welcome, Teacher! Here you can manage your classes and students.")
@@ -92,7 +94,7 @@ def teacher_tab_manage_subjects():
         for sub in subjects:
             def share_btn():
                 if st.button(f"Share Code: {sub['name']}",icon=":material/share:", icon_position="right", width='stretch', key=f"share_{sub['subject_code']}"):
-                    share_subject_dialog(sub['subject_code'], sub['name'], sub['section'])
+                    share_subject_dialog(sub['name'], sub['subject_code'])
 
                 st.space()
 
