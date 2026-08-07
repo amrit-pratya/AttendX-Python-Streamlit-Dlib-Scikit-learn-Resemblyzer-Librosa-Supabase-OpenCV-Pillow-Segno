@@ -37,7 +37,7 @@ def teacher_dashboard():
 
     with c2:
         st.subheader(f"Welcome! {teacher_data['name']}")
-        if st.button("Logout", type="secondary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("Logout", type="secondary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace", width="stretch"):
             st.session_state['is_logged_in'] = False
             del st.session_state['teacher_data']
             st.rerun()

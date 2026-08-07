@@ -15,7 +15,7 @@ from src.pipelines.face_pipeline import predict_attendence, get_face_embeddings,
 
 from src.pipelines.voice_pipeline import get_voice_embedding
 
-from src.screens.components.subject_cards import subject_card
+from src.screens.components.subject_cards import subject_card, subject_card2
 from src.screens.components.enroll_dialog import enroll_dialog
 
 
@@ -26,7 +26,7 @@ def student_dashboard():
         header_db()
     with c2:
         st.subheader(f"Welcome! {student_data['name']}")
-        if st.button("Logout", type="secondary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace"):
+        if st.button("Logout", type="secondary", icon="🏠", icon_position="right", shortcut="control+backspace"):
             st.session_state['is_logged_in'] = False
             del st.session_state['student_data']
             st.rerun()
@@ -36,8 +36,7 @@ def student_dashboard():
     with c1:
         st.header("Your Enrolled Subjects")
     with c2:
-        st.subheader(f"Welcome, {student_data['name']}!")
-        if st.button("Logout", type="primary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace", width='stretch'):
+        if st.button("Enroll in Subject", type="primary", icon="➕", icon_position="right"):
             enroll_dialog()
             
     st.divider()
@@ -54,32 +53,36 @@ def student_dashboard():
             stats_map[sid] = {'total': 0, 'attended': 0}
 
         stats_map[sid]['total'] += 1
+
         if logs.get('is_present'):
             stats_map[sid]['attended'] += 1
 
     cols = st.columns(2)
     for i, sub_node in enumerate(subjects):
-        sub = sub_node['subject']
+        sub = sub_node['subjects']
         sid = sub['subject_id']
 
 
         stats = stats_map.get(sid, {'total': 0, 'attended': 0})
 
         def unenroll_btn(sub_id=sid):
-            if st.button("Unenroll", type='tertiary', icon="❌", icon_position="right", width='stretch'):
-                unenroll_student_from_subject(student_data['student_id'], sub_id)
+            if st.button(
+                "Unenroll from this course",
+                use_container_width=True,type="tertiary", icon=':material/delete_forever:', icon_position="right", key=f"unenroll_{sub_id}"):
+                    unenroll_student_from_subject(
+                        student_data["student_id"],
+                        sub_id)
+                    st.toast(f"Unenrolled from {sub['name']} successfully!")
                 
 
         with cols[i % 2]:
-            subject_card(
-                name = sub['name'],
-                code = sub['subject_code'],
-                section = sub['section'],
-                stats = [
-                    ('🗓️', 'Total', stats['total']),
-                    ('✅', 'Attended', stats['attended'])
-                ],
-                footer_callback = unenroll_btn
+            subject_card2(
+                subject_code=sub["subject_code"],
+                subject_name=sub["name"],
+                section=sub["section"],
+                attended_classes=stats["attended"],
+                total_classes=stats["total"],
+                footer_callback=unenroll_btn
             )
 
 
