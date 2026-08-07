@@ -1,6 +1,7 @@
 import streamlit as st
-from src.database.db import create_students
+from src.database.db import enroll_student_to_subject
 from src.database.config import supabase
+import time
 
 
 @st.dialog("Enroll in Subject", icon=":material/class:")
@@ -16,12 +17,12 @@ def enroll_dialog():
           student_id = st.session_state.student_data['student_id']
 
           check = supabase.table('subject_students').select("*").eq("subject_id", subject['subject_id']).eq("student_id", student_id).execute()
-          message = create_students(student_id, subject['subject_code'])
-          if message == "Student enrolled successfully.":
-              st.success(message)
-              st.session_state.student_data['enrolled_subjects'].append(subject)
+          if check.data:
+              st.warning("You are already enrolled in this subject.")
+          else:
+              enroll_student_to_subject(student_id, subject['subject_id'])
+              st.success(f"Successfully enrolled")
+              time.sleep(1)
               st.rerun()
-      else:
-          st.error(message)
     else:
         st.warning("Please enter a valid subject code.")

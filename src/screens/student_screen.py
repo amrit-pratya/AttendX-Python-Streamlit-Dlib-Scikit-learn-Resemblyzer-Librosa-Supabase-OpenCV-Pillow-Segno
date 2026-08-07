@@ -9,11 +9,14 @@ from src.screens.components.header import header_db
 
 from src.screens.components.footer import footer_home
 
-from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_all_students, create_student
+from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_all_students, create_student, get_student_subjects, get_student_attendance_logs, enroll_student_to_subject, unenroll_student_from_subject
 
 from src.pipelines.face_pipeline import predict_attendence, get_face_embeddings, train_classifier
 
 from src.pipelines.voice_pipeline import get_voice_embedding
+
+from src.screens.components.subject_cards import subject_card
+from src.screens.components.enroll_dialog import enroll_dialog
 
 
 def student_dashboard():
@@ -37,6 +40,48 @@ def student_dashboard():
         if st.button("Logout", type="primary", icon="🏠", icon_position="right", key='loginbackbtn', shortcut="control+backspace", width='stretch'):
             enroll_dialog()
             
+    st.divider()
+
+
+    with st.spinner('Loading your subjects...'):
+        subjects = get_student_subjects(student_data['student_id'])
+        logs = get_student_attendance_logs(student_data['student_id'])
+
+    stats_map = {}
+    for log in logs:
+        sid = log['subject_id']
+        if sid not in stats_map:
+            stats_map[sid] = {'total': 0, 'attended': 0}
+
+        stats_map[sid]['total'] += 1
+        if logs.get('is_present'):
+            stats_map[sid]['attended'] += 1
+
+    cols = st.columns(2)
+    for i, sub_node in enumerate(subjects):
+        sub = sub_node['subject']
+        sid = sub['subject_id']
+
+
+        stats = stats_map.get(sid, {'total': 0, 'attended': 0})
+
+        def unenroll_btn(sub_id=sid):
+            if st.button("Unenroll", type='tertiary', icon="❌", icon_position="right", width='stretch'):
+                unenroll_student_from_subject(student_data['student_id'], sub_id)
+                
+
+        with cols[i % 2]:
+            subject_card(
+                name = sub['name'],
+                code = sub['subject_code'],
+                section = sub['section'],
+                stats = [
+                    ('🗓️', 'Total', stats['total']),
+                    ('✅', 'Attended', stats['attended'])
+                ],
+                footer_callback = unenroll_btn
+            )
+
 
     footer_home()
 
