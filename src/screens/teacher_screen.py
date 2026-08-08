@@ -14,6 +14,8 @@ from src.screens.components.subject_cards import subject_card
 
 from src.screens.components.dialog_share_screen import share_subject_dialog
 
+from src.screens.components.dialog_add_photos import add_photos_dialog
+
 def teacher_screen():
     #st.title("Teacher Screen")
     #st.write("Welcome, Teacher! Here you can manage your classes and students.")
@@ -76,8 +78,35 @@ def teacher_dashboard():
 
 
 def teacher_tab_take_attendance():
+    teacher_id = st.session_state.teacher_data['teacher_id']
+    
     st.subheader("Take Attendance")
-    st.write("This is where you can take attendance for your classes.")
+
+    if 'attendence_images' not in st.session_state:
+        st.session_state.attendence_images = []
+
+    subjects = get_teacher_subjects(teacher_id)
+
+    if not subjects:
+        st.warning("No subjects found. Please create a new subject to get started.")
+        return
+
+    subject_options = {f"{sub['name']} - {sub['subject_code']}": sub['subject_id'] for sub in subjects}
+
+    col1, col2 = st.columns([3, 1])
+
+    with col1:
+        selected_subject_label = st.selectbox('Select Subject', options=list(subject_options.keys()))
+
+    with col2:
+        if st.button('Add Photos', type='primary', icon=':material/photo_prints:', width='stretch'):
+            add_photos_dialog()
+
+    selected_subject_id = subject_options[selected_subject_label]
+
+    st.divider()
+
+    #st.write("This is where you can take attendance for your classes.")
     # Add functionality for taking attendance here
 
 def teacher_tab_manage_subjects():
