@@ -63,8 +63,8 @@ def add_photos_dialog():
     if "photo_tab" not in st.session_state:
         st.session_state.photo_tab = "camera"
 
-    if "attendence_images" not in st.session_state:
-        st.session_state.attendence_images = []
+    if "attendance_images" not in st.session_state:
+        st.session_state.attendance_images = []
 
     # -------------------------
     # Camera / Upload tabs
@@ -105,7 +105,7 @@ def add_photos_dialog():
 
             image = Image.open(cam_photo)
 
-            st.session_state.attendence_images.append(image)
+            st.session_state.attendance_images.append(image)
 
             st.toast("📸 Photo captured successfully!")
 
@@ -138,7 +138,7 @@ def add_photos_dialog():
 
                     image = Image.open(file)
 
-                    st.session_state.attendence_images.append(image)
+                    st.session_state.attendance_images.append(image)
 
                     existing_names.add(file.name)
 
@@ -152,19 +152,19 @@ def add_photos_dialog():
     # Show uploaded photos
     # -------------------------
 
-    if st.session_state.attendence_images:
+    if st.session_state.attendance_images:
 
         st.divider()
 
         st.write(
             f"**Photos selected:** "
-            f"{len(st.session_state.attendence_images)}"
+            f"{len(st.session_state.attendance_images)}"
         )
 
         cols = st.columns(3)
 
         for i, image in enumerate(
-            st.session_state.attendence_images
+            st.session_state.attendance_images
         ):
             with cols[i % 3]:
                 st.image(

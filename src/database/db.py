@@ -153,5 +153,5 @@ def get_student_attendance_logs(student_id):
 
 
 def create_attendance(logs):
-   response = supabase.table('attendance_logs').insert.execute()
-   return response.data
+  response = supabase.table('attendence_logs').insert(logs).execute()
+  return response.data
