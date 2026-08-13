@@ -16,7 +16,7 @@ from src.screens.components.header import header_db
 
 from src.screens.components.footer import footer_home
 
-from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_teacher_subjects
+from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_teacher_subjects, get_attendance_for_teacher
 
 from src.screens.components.dialog_create_subject import create_subject_dialog
 
@@ -27,6 +27,8 @@ from src.screens.components.dialog_share_screen import share_subject_dialog
 from src.screens.components.dialog_add_photos import add_photos_dialog
 
 from src.screens.components.dialog_attendance_result import attendance_result_dialog
+
+from src.screens.components.dialog_attendance_voice import voice_attendance_dialog
 
 def teacher_screen():
     #st.title("Teacher Screen")
@@ -84,8 +86,8 @@ def teacher_dashboard():
         teacher_tab_take_attendance()
     elif st.session_state.curr_teacher_tab == "manage_subjects":
         teacher_tab_manage_subjects()
-    elif st.session_state.curr_teacher_tab == "attendence_records":
-        teacher_tab_attendence_records()
+    elif st.session_state.curr_teacher_tab == "attendance_records":
+        teacher_tab_attendance_records()
     footer_home()
 
 
@@ -222,10 +224,57 @@ def teacher_tab_manage_subjects():
     else:
         st.info("No subjects found. Please create a new subject to get started.")
 
-def teacher_tab_attendence_records():
+def teacher_tab_attendance_records():
     st.subheader("Attendance Records")
-    st.write("This is where you can view attendance records.")
+    #st.write("This is where you can view attendance records.")
     # Add functionality for viewing attendance records here
+    teacher_id = st.session_state.teacher_data['teacher_id']
+
+    records = get_attendance_for_teacher(teacher_id)
+
+    if not records:
+        print("No records")
+        return
+
+    data = []
+
+    for r in records:
+        ts = r.get('timestamp')
+
+        data.append({
+            "ts_group": ts.split(".")[0] if ts else None,
+            "Time": datetime.fromisoformat(ts).strftime("%Y-%m-%d %I:%M %p") if ts else "N'A",
+            "Subject": r['subjects']['name'],
+            "Subject Code": r['subjects']['subject_code'],
+            'is_present': bool(r.get('is_present', False))
+        })
+
+
+    df = pd.DataFrame(data)
+
+    summary = (
+        df.groupby([
+            'ts_group',
+            'Time',
+            'Subject',
+            'Subject Code'
+        ]).agg(
+            Present_Count = ('is_present', 'sum'),
+            Total_Count = ('is_present', 'count')
+        ).reset_index()
+    )
+
+    summary['Attendance Stats'] = (
+        "✅" + summary['Present_Count'].astype(str) + " /" + summary['Total_Count'].astype(str) + " Students"
+    )
+
+    display_df = (summary.sort_values(by='ts_group', ascending=False)
+                  [['Time', "Subject", "Subject Code", "Attendance Stats"]])
+
+    st.dataframe(display_df, width='stretch', hide_index=True)
+
+
+
 
 
 def login_teacher(username, password):

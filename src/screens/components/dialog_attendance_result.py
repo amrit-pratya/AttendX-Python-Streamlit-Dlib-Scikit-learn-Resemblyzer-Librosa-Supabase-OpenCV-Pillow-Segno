@@ -15,6 +15,7 @@ def show_attendance_result(df, logs):
   with col1:
     if st.button('Discard', width='stretch'):
       st.session_state.voice_attendance_results = None
+      st.session_state.attendance_images = []
       st.rerun()
 
     with col2:

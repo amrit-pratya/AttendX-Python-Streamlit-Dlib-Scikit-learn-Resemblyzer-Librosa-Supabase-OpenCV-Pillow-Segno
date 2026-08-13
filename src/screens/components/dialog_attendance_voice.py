@@ -10,7 +10,7 @@ from datetime import datetime
 
 from src.screens.components.dialog_attendance_result import show_attendance_result
 
-st.dialog("Voice Attendance")
+@st.dialog("Voice Attendance")
 def voice_attendance_dialog(selected_subject_id):
   st.write('Record audio of students saying I am present.Then AI will recognize the stuidents')
 
